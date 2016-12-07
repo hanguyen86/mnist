@@ -29,7 +29,10 @@ class Classifier:
         
         # start a new session
         self.session = tf.InteractiveSession()
-        
+    
+    # ---------------------------------------------------------
+    # Life cycle
+    
     def __enter__(self):
         return self
     
@@ -37,7 +40,10 @@ class Classifier:
         # reset everything and close session
         tf.reset_default_graph()
         self.session.close()
-        
+    
+    # ---------------------------------------------------------
+    # Main methods
+    
     def train(self):
         self.loadMNISTDataset()
     
@@ -63,7 +69,10 @@ class Classifier:
         except Exception:
             print('Unknown exception!')
             return None
-        
+    
+    # ---------------------------------------------------------
+    # Utilities
+    
     def evaluate(self, images, labels):
         correct_prediction = tf.equal(tf.argmax(self.y, 1), tf.argmax(self.y_, 1))
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -210,7 +219,7 @@ class CNNClassifier(Classifier):
 
 def main(argv):
     # define argument list
-    parser = argparse.ArgumentParser(description='Description of your program')
+    parser = argparse.ArgumentParser(description='Classification')
     parser.add_argument('-c', '--classifier',
                         help='Specify the type of Classifier',
                         required=True)
@@ -221,6 +230,11 @@ def main(argv):
                         help='Predict an image',
                         required=False)
     args = vars(parser.parse_args())
+    
+    # example of predicting:
+    # python app/classifier.py -c SoftmaxClassifier -p uploads/4.png 
+    # example of training:
+    # python app/classifier.py -c SoftmaxClassifier -t
     
     with eval(args['classifier'])() as classifier:
         if args['train']:
