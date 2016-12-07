@@ -35,6 +35,7 @@ Recognizing an handwrittent digit image using Flask framework.
 
 ## Installation
 1. Requires: Python 2.7, Git
+
 2. Install pip & Virtualenv
   * Ubuntu/Linux 64-bit
   ```
@@ -45,11 +46,13 @@ Recognizing an handwrittent digit image using Flask framework.
 sudo easy_install pip
 sudo pip install --upgrade virtualenv
   ```
+
 3. Create and activate Virtualenv environment
-```
+  ```
 virtualenv --system-site-packages ~/mnist
 source ~/mnist/bin/activate  # If using bash
-```
+  ```
+
 4. TensorFlow: choose one of the following package
   * Ubuntu/Linux 64-bit, CPU only, Python 2.7
   ```
@@ -67,22 +70,26 @@ export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/cpu/tensorflo
   ```
 export TF_BINARY_URL=https://storage.googleapis.com/tensorflow/mac/gpu/tensorflow_gpu-0.12.0rc0-py2-none-any.whl
   ```
+
 5. Tensorflow: install the selected package above:
   ```
 pip install --upgrade $TF_BINARY_URL
   ```
+
 6. Clone the repo and cd to mnist directory
-```
+  ```
 git clone https://github.com/hanguyen86/mnist.git
-```
+  ```
+
 7. Install Flask and other necessary packages
-```
+  ```
 pip install -r requirements.txt
-```
+  ```
+
 8. Run the server. Test the server at [http://localhost:8001/](http://localhost:8001/) 
-```
+  ```
 python runserver.py
-```
+  ```
 
 ## Classification
 In `classifier.py`, we defined a base class for Recognition task for *training* and *predict*. We also included 2 specific implementation using Softmax regression model and Convolution Neural Network (CNN).
@@ -92,10 +99,12 @@ In `classifier.py`, we defined a base class for Recognition task for *training* 
   ```
   python app/classifier.py -c <Classifier_Name> -t
   ```  
+  
   * For predicting:
   ```
   python app/classifier.py -c <Classifier_Name> -p <Image_Path>
   ```
+  
   * Example:
   ```
   # help
