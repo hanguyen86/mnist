@@ -89,4 +89,11 @@ ENV/
 .ropeproject
 
 # MNIST dataset
-tensorflow/MNIST_data/
+app/MNIST_data/
+
+# .DS_Store files on Mac
+.DS_Store
+*/.DS_Store
+*/*/.DS_Store
+*/*/*/.DS_Store
+*/*/*/*/.DS_Store

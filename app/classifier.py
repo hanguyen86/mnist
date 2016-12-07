@@ -1,38 +1,68 @@
+"""
+Handwritten Digit Recognition
+Licence: BSD
+Author : Hoang Anh Nguyen
+"""
+
 import tensorflow as tf
 import numpy as np
+import os, sys
 from PIL import Image
+import argparse
 from tensorflow.examples.tutorials.mnist import input_data
 
 class Classifier:
-
+    
     def __init__(self, batchSize, numEpoch):
-        self.batchSize = batchSize
-        self.numEpoch = numEpoch
+        self.batchSize  = batchSize
+        self.numEpoch   = numEpoch
         
-        self.trainedModelPath = "./trained_model/model.ckpt"
+        prefix = os.path.dirname(__file__)
+        if prefix == '':
+            prefix = '.'
+        self.trainedModelPath = prefix + "/tensorflow/trained_model/"
         
-        # single flattened 28 by 28 pixel MNIST image 
+        # input: single flattened 28 by 28 pixel MNIST image 
         self.x  = tf.placeholder(tf.float32, shape=[None, 784])
-        # label output (take value from 0 to 9)
+        # output: class label (from 0 to 9)
         self.y_ = tf.placeholder(tf.float32, shape=[None, 10])
         
-        # start a session for
+        # start a new session
         self.session = tf.InteractiveSession()
+        
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, exc_type, exc_value, traceback):
+        # reset everything and close session
+        tf.reset_default_graph()
+        self.session.close()
         
     def train(self):
         self.loadMNISTDataset()
     
-    def predict(self, filename):
-        # load trained model
-        self.loadModel()
-        
-        # read input image into (1, 784) array
-        x_image = self.readImageIntoArray(filename)
-        
-        # forward pass, and find the index of maximum value in y
-        prediction = tf.argmax(self.y, 1)
-        label = prediction.eval(feed_dict = {self.x: x_image})
-        return label[0]
+    def predict(self, filename):   
+        try:
+            # load trained model
+            self.loadModel()
+
+            # read input image into (1, 784) array
+            x_image = self.readImageIntoArray(filename)
+
+            # forward pass, and find the index of maximum value in y
+            prediction = tf.argmax(self.y, 1)
+            label = prediction.eval(feed_dict = {self.x: x_image})
+            print('Predicted label: ', label[0])
+            return label[0]
+        except IOError as err:
+            print(err)
+            return None
+        except ValueError as err:
+            print(err)
+            return None
+        except Exception:
+            print('Unknown exception!')
+            return None
         
     def evaluate(self, images, labels):
         correct_prediction = tf.equal(tf.argmax(self.y, 1), tf.argmax(self.y_, 1))
@@ -53,8 +83,13 @@ class Classifier:
         saver.restore(self.session, self.trainedModelPath)
         
     def readImageIntoArray(self, filename):
-        # read & convert image to Grayscale
+        if not os.path.exists(filename):
+            raise IOError('Invalid input image: ' + filename)
+        
+        # read & convert image to Grayscale. Must be 28x28 size
         image = Image.open(filename, 'r').convert('L')
+        if image.width != 28 or image.height != 28:
+            raise ValueError('Input image must has 28x28 size')
         
         # convert to numpy array
         array = np.asarray(image.getdata(), dtype=np.float32)
@@ -64,6 +99,8 @@ class SoftmaxClassifier(Classifier):
     
     def __init__(self, batchSize = 100, numEpoch = 1000):
         Classifier.__init__(self, batchSize, numEpoch)
+        
+        self.trainedModelPath += 'softmax/model.ckpt'
         
         # parameters: W and b
         self.W = tf.Variable(tf.zeros([784, 10]))
@@ -97,6 +134,8 @@ class CNNClassifier(Classifier):
     
     def __init__(self, batchSize = 100, numEpoch = 30000):
         Classifier.__init__(self, batchSize, numEpoch)
+        
+        self.trainedModelPath += 'cnn/model.ckpt'
         
         # define CNN layers & their connections
         self.buildCNNLayers()
@@ -169,12 +208,25 @@ class CNNClassifier(Classifier):
         return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
                               strides=[1, 2, 2, 1], padding='SAME')
 
-# Usage:
-#classifier = SoftmaxClassifier()
-#label = classifier.predict("./test/9.jpg")
-#print('Predicted label:', label)
-
-classifier = CNNClassifier()
-#classifier.train()
-label = classifier.predict("./test/4.png")
-print('Predicted label:', label)
+def main(argv):
+    # define argument list
+    parser = argparse.ArgumentParser(description='Description of your program')
+    parser.add_argument('-c', '--classifier',
+                        help='Specify the type of Classifier',
+                        required=True)
+    parser.add_argument('-t','--train', action='store_true',
+                        help='Perform the trainning action',
+                        required=False)
+    parser.add_argument('-p','--predict',
+                        help='Predict an image',
+                        required=False)
+    args = vars(parser.parse_args())
+    
+    with eval(args['classifier'])() as classifier:
+        if args['train']:
+            classifier.train()
+        elif args['predict']:
+            classifier.predict(args['predict'])            
+    
+if __name__ == '__main__':
+    main(sys.argv)

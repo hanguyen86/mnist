@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{%block title%}MNIST{%endblock%}
+
+{%block main_content%}
+
+    <h1>Upload</h1>
+    <form action = "http://localhost:8001/upload" method = "POST" 
+        enctype = "multipart/form-data">
+        <input type = "file" name = "image" />
+        <input type = "submit"/>
+    </form>
+
+{%endblock%}
